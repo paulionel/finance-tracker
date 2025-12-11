@@ -23,6 +23,25 @@ def get_transactions(skip: int = 0, limit: int = 100):
         results = session.exec(statement)
         return results.all()
 
+def get_transactions_with_names(db: Session):
+    transactions = db.query(Transaction).all()
+    result = []
+    for t in transactions:
+        user = db.query(User).filter(User.id == t.user_id).first()
+        category = db.query(Category).filter(Category.id == t.category_id).first()
+        payment = db.query(PaymentMethod).filter(PaymentMethod.id == t.payment_method_id).first()
+        result.append({
+            "id": t.id,
+            "user": user.name if user else "",
+            "category": category.name if category else "",
+            "payment_method": payment.name if payment else "",
+            "amount": t.amount,
+            "note": t.note,
+            "timestamp": t.timestamp,
+            "is_deposit": t.is_deposit
+        })
+    return result
+
 def update_transaction(transaction_id: int, **kwargs) -> Transaction | None:
     with Session(engine) as session:
         transaction = session.get(Transaction, transaction_id)

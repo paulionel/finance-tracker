@@ -1,13 +1,14 @@
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Depends
+from sqlalchemy.orm import Session
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from app.db import init_db
+from app.db import get_db, init_db
 from app.models import Transaction, User, Category, PaymentMethod
 from app.crud import (
     create_transaction, get_transaction, get_transactions, update_transaction, delete_transaction,
     create_user, get_user, get_users, update_user, delete_user,
     create_category, get_category, get_categories, update_category, delete_category,
-    create_payment_method, get_payment_method, get_payment_methods, update_payment_method, delete_payment_method
+    create_payment_method, get_payment_method, get_payment_methods, update_payment_method, delete_payment_method, get_transactions_with_names
 )
 
 app = FastAPI(title="Finance Tracker")
@@ -35,9 +36,13 @@ def read_root(request: Request):
 def api_create_transaction(transaction: Transaction):
     return create_transaction(transaction)
 
-@app.get("/transactions/", response_model=list[Transaction])
+@app.get("/transactions/raw", response_model=list[Transaction])
 def api_get_transactions(skip: int = 0, limit: int = 100):
     return get_transactions(skip, limit)
+
+@app.get("/transactions/")
+def read_transactions(db: Session = Depends(get_db)):
+    return get_transactions_with_names(db)
 
 @app.get("/transactions/{transaction_id}", response_model=Transaction)
 def api_get_transaction(transaction_id: int):
