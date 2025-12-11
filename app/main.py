@@ -1,4 +1,6 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from app.db import init_db
 from app.models import Transaction, User, Category, PaymentMethod
 from app.crud import (
@@ -14,6 +16,17 @@ app = FastAPI(title="Finance Tracker")
 @app.on_event("startup")
 def on_startup():
     init_db()
+
+# Serve static files (CSS, JS, images)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# Serve HTML templates
+templates = Jinja2Templates(directory="templates")
+
+# Root endpoint serving index.html
+@app.get("/")
+def read_root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
 # -----------------------------
 # Transactions Endpoints
