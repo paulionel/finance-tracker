@@ -3,4 +3,5 @@ uvicorn[standard]
 sqlmodel
 asyncpg
 python-dotenv
-
+psycopg2-binary
+jinja2
